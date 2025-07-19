@@ -30,10 +30,37 @@ sim_type=ac
 autoload=0
 hilight_wave=-1
 x2=9}
+B 2 890 570 1690 970 {flags=graph
+y1=-150
+y2=0
+ypos1=0
+ypos2=2
+divy=5
+subdivy=4
+unity=1
+x1=0
+divx=5
+subdivx=1
+xlabmag=1.0
+ylabmag=1.0
+
+
+dataset=-1
+unitx=1
+logx=1
+logy=0
+color=5
+node=ph(vo)
+
+sim_type=ac
+autoload=0
+hilight_wave=-1
+x2=9}
 T {tcleval(A0: [to_eng [xschem raw value A0 0]]
-GBW: [to_eng [xschem raw value ugf 0]]
+GBW: [to_eng [xschem raw value GBW 0]]
+UGF: [to_eng [xschem raw value ugf 0]]
 PM: [to_eng [xschem raw value pm 0]]
-)} 930 750 0 0 0.4 0.4 {floater=1}
+)} 620 340 0 0 0.4 0.4 {floater=1}
 N 570 160 590 160 {
 lab=vo}
 N 260 300 300 300 {
@@ -87,19 +114,18 @@ N 590 160 650 160 {lab=vo}
 N 650 180 650 200 {lab=vo}
 N 650 260 650 300 {lab=GND}
 C {devices/lab_wire.sym} 480 100 0 0 {name=p2 sig_type=std_logic lab=VDD}
-C {devices/code_shown.sym} 880 50 0 0 {name=COMMANDS
+C {devices/code_shown.sym} 860 40 0 0 {name=COMMANDS
 simulator=ngspice
 only_toplevel=false
 value="
-.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
-.inc /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib ../../../models_updated_2025.07.19/ngspice/sm141064.ngspice typical
+.inc ../../../models_updated_2025.07.19/ngspice/design.ngspice
 .inc ../sizing_ota-5t_gf.spice
 .param vdd=3 vcm=1.5 cl=1p
 .option savecurrents
 
 .control
     save all
-    save @m.x1.xM0a.m0[gm]
     op
     show
     write ota-5t_gf_tb.raw
@@ -108,20 +134,22 @@ value="
     ac dec 20 1 10e9
     let vo_mag = abs(v(vo))
     let vo_phase_margin = phase(v(vo)) * 180/pi + 180
-    meas ac A0 find vo_mag at=1k
+    meas ac A0 max vo_mag
+    let ref = A0/sqrt(2)
+    meas ac BW when vo_mag=ref fall=1
+    let GBW = A0*BW
     meas ac UGF when vo_mag=1 fall=1
     meas ac PM find vo_phase_margin when vo_mag=1
-    echo $&A0 $&UGF $&PM
-    echo $plots
+    echo $&A0 $&GBW $&UGF $&PM
     remzerovec
     write ota-5t_gf_tb.raw
 .endc
 "}
-C {devices/launcher.sym} 990 650 0 0 {name=h26
+C {devices/launcher.sym} 680 480 0 0 {name=h26
 descr="Annotate OP" 
 tclcommand="set show_hidden_texts 1; xschem annotate_op"
 }
-C {devices/launcher.sym} 990 700 0 0 {name=h27
+C {devices/launcher.sym} 680 520 0 0 {name=h27
 descr="Load AC" 
 tclcommand="
 xschem raw_read $netlist_dir/[file tail [file rootname [xschem get current_name]]].raw ac
